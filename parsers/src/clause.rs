@@ -22,9 +22,10 @@ fn gclause<'a>(
     remainder: impl Parser<&'a str, ASTNode, VerboseError<&'a str>>,
 ) -> impl FnMut(&'a str) -> Res<&'a str, ASTNode> {
     map(
-        tuple((bullet, intro, remainder)),
-        |(bullet, intro, body)| ASTNode {
+        tuple((bullet, spanned(intro), remainder)),
+        |(bullet, (intro, ispan), body)| ASTNode {
             clause_num: bullet.to_owned(),
+            span: ispan.to_owned(),
             ty: ASTNodeType::Clause(Box::new(Clause { intro, body })),
         },
     )
@@ -133,20 +134,12 @@ fn only_via(s: &str) -> Res<&str, ASTNode> {
             // these are only allowed to be present at the top level, hence the
             // L1 bullet restriction
             l1_bullet,
-            delimited(
-                tuple((tag("Each"), space1)),
-                variable_intro,
-                tag("goes to a"),
-            ),
-            map(
-                pair(
-                    alt((variable_marked, variable_def)),
-                    many0(tuple((operator, alt((variable_marked, variable_def))))),
+            spanned(tuple((
+                delimited(
+                    tuple((tag("Each"), space1)),
+                    variable_intro,
+                    tag("goes to a"),
                 ),
-                join_variable_intros,
-            ),
-            preceded(
-                tag("only via a"),
                 map(
                     pair(
                         alt((variable_marked, variable_def)),
@@ -154,15 +147,26 @@ fn only_via(s: &str) -> Res<&str, ASTNode> {
                     ),
                     join_variable_intros,
                 ),
-            ),
+                preceded(
+                    tag("only via a"),
+                    map(
+                        pair(
+                            alt((variable_marked, variable_def)),
+                            many0(tuple((operator, alt((variable_marked, variable_def))))),
+                        ),
+                        join_variable_intros,
+                    ),
+                ),
+            ))),
         )),
     );
-    let (remainder, (bullet, src, sink, checkpoint)) = combinator(s)?;
+    let (remainder, (bullet, ((src, sink, checkpoint), span))) = combinator(s)?;
 
     Ok((
         remainder,
         ASTNode {
             clause_num: bullet.to_owned(),
+            span: span.to_owned(),
             ty: ASTNodeType::OnlyVia(src, sink, checkpoint),
         },
     ))

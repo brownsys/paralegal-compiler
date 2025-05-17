@@ -1,7 +1,7 @@
-CauseBuilder::new("", "{{clause_num}}")
+CauseBuilder::new("{{span}}", "{{clause_num}}")
 {{#if sink-for-each}}
-.has_ctrl_influence_all
+    .has_ctrl_influence_all
 {{else}}
-.has_ctrl_influence
+    .has_ctrl_influence
 {{/if}}
-(&{{src}}, &{{sink}}, &ctx)
+    ({{{src}}}, {{{sink}}}, ctx.as_ref())

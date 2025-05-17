@@ -1,7 +1,7 @@
-CauseBuilder::new("", "{{clause_num}}")
-    {{#if sink-for-each}}
+CauseBuilder::new("{{span}}", "{{clause_num}}")
+{{#if sink-for-each}}
     .goes_to_all
-    {{else}}
+{{else}}
     .goes_to
-    {{/if}}
-        ({{src}}, {{sink}}, ctx.as_ref())
+{{/if}}
+        ({{{src}}}, {{{sink}}}, ctx.as_ref())

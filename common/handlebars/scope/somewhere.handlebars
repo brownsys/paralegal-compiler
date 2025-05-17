@@ -1,7 +1,7 @@
-{{global-definitions}}
+{{{global-definitions}}}
 
 let found = CauseBuilder::new("Scope somewhere", "").any(ctx.controller_contexts(), |ctx| {
-    {{definitions}}
-    {{body}}
+    {{{definitions}}}
+    {{{body}}}
 });
 error::report(found, ctx.root());

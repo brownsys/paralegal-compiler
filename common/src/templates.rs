@@ -179,7 +179,7 @@ impl From<&ASTNode> for Template {
 }
 
 pub fn register_templates(handlebars: &mut Handlebars) {
-    handlebars.register_escape_fn(no_escape);
+    handlebars.register_escape_fn(|s| s.replace('"', "\\\""));
     handlebars
         .register_embed_templates::<TemplateDirectory>()
         .unwrap();

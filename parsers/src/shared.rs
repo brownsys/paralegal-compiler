@@ -5,9 +5,10 @@ use nom::{
     bytes::complete::{tag, take_while1},
     character::complete::{alpha1, digit1, multispace0, multispace1, space0, space1},
     combinator::{opt, recognize},
-    error::context,
+    error::{context, VerboseError},
     multi::many1,
     sequence::{delimited, preceded, terminated, tuple},
+    Parser,
 };
 
 use common::ast::*;
@@ -159,7 +160,18 @@ pub fn join_nodes((start, rest): (ASTNode, Vec<(Operator, ASTNode)>)) -> ASTNode
         };
         ASTNode {
             ty: ASTNodeType::JoinedNodes(Box::new(ob)),
+            span: "".to_owned(),
             clause_num: "".to_owned(),
         }
     })
+}
+
+pub fn spanned<'a, T>(
+    mut parser: impl Parser<&'a str, T, VerboseError<&'a str>>,
+) -> impl FnMut(&'a str) -> Res<&'a str, (T, &'a str)> {
+    move |s| {
+        let (remainder, result) = parser.parse(s)?;
+        let span = &s[..s.len() - remainder.len()];
+        Ok((remainder, (result, span)))
+    }
 }

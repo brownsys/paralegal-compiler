@@ -189,10 +189,14 @@ pub fn relation(s: &str) -> Res<&str, Relation> {
 pub fn relation_node<'a>(
     bullet: impl Parser<&'a str, &'a str, VerboseError<&'a str>>,
 ) -> impl FnMut(&'a str) -> Res<&'a str, ASTNode> {
-    map(tuple((bullet, relation)), |(bullet, relation)| ASTNode {
-        ty: ASTNodeType::Relation(relation),
-        clause_num: bullet.to_string(),
-    })
+    map(
+        tuple((bullet, spanned(relation))),
+        |(bullet, (relation, span))| ASTNode {
+            ty: ASTNodeType::Relation(relation),
+            span: span.to_string(),
+            clause_num: bullet.to_string(),
+        },
+    )
 }
 
 pub fn grelations<'a>(

@@ -115,6 +115,8 @@ fn compile_only_via(
         panic!("Called render_only_via on the wrong kind of node");
     };
     let mut map: HashMap<&str, Vec<String>> = HashMap::new();
+    map.insert("clause_num", vec![node.clause_num.clone()]);
+    map.insert("span", vec![node.span.clone()]);
 
     fn render_only_via_intro(
         handlebars: &mut Handlebars,
@@ -207,7 +209,8 @@ fn compile_ast_node(
     inside_definition_filter: bool,
 ) -> String {
     let mut map: HashMap<&str, String> = HashMap::new();
-    map.insert("clause_num", node.clause_num.to_string());
+    map.insert("clause_num", node.clause_num.clone());
+    map.insert("span", node.span.clone());
     match &node.ty {
         ASTNodeType::Relation(relation) => compile_relation(
             handlebars,

@@ -155,6 +155,7 @@ pub struct FusedClause {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ASTNode {
     pub clause_num: String,
+    pub span: String,
     pub ty: ASTNodeType,
 }
 

@@ -43,7 +43,7 @@ impl ContainsNodeExt for Option<NodeCluster> {
 
 pub fn check(ctx: Arc<RootContext>) -> Result<()> {
         ctx.named_policy(Identifier::new_intern("check"), |ctx| {
-        {{policy}}
+        {{{policy}}}
         Ok(())
         })
         }

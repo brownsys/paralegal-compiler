@@ -260,6 +260,7 @@ fn fuse(original_policy: Policy) -> Policy {
     fn process_node(node: &ASTNode, state: &mut FuseState) -> ASTNode {
         ASTNode {
             ty: process_node_type(&node.ty, state),
+            span: node.span.clone(),
             clause_num: node.clause_num.clone(),
         }
     }
