@@ -40,7 +40,7 @@ struct Args {
 fn check_environment(policy: &Policy) {
     let mut env = Environment::new();
     verify_definitions_scope(&policy.definitions, &mut env);
-    verify_scope(&policy.body, &mut env);
+    verify_scope(&policy.body.ty, &mut env);
 }
 
 fn run(args: &Args) -> Result<()> {

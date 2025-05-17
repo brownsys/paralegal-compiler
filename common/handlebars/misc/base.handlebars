@@ -2,7 +2,7 @@ use anyhow::Result;
 use std::sync::Arc;
 
 use paralegal_policy::{
-    assert_error, paralegal_spdg::{traverse::EdgeSelection, Identifier, NodeCluster}, Context, GlobalNode, IntoIterGlobalNodes, Marker, NodeExt, NodeQueries, RootContext
+    assert_error, paralegal_spdg::{traverse::EdgeSelection, Identifier, NodeCluster}, Context, GlobalNode, IntoIterGlobalNodes, Marker, NodeExt, NodeQueries, RootContext, error::{self, CauseBuilder, CauseTy, Connective}
 };
 
 macro_rules! marker {

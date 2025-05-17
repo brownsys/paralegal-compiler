@@ -143,18 +143,15 @@ pub fn join_variable_intros(
 
 // Given an initial node and a vector of (operator, node) pairs, construct an ASTNode::{Operator}
 // joining each of the nodes
-pub fn join_nodes(tup: (ASTNode, Vec<(Operator, ASTNode)>)) -> ASTNode {
-    let mut ops: HashSet<&Operator> = HashSet::new();
-    for (op, _) in &tup.1 {
-        ops.insert(op);
-    }
+pub fn join_nodes((start, rest): (ASTNode, Vec<(Operator, ASTNode)>)) -> ASTNode {
+    let Some(reference_op) = rest.get(0).map(|(op, _)| op.clone()) else {
+        return start;
+    };
 
-    assert!(
-        ops.len() <= 1,
-        "Ambigious policy: cannot mix ands/ors on the same level"
-    );
-
-    tup.1.into_iter().fold(tup.0, |acc, (op, clause)| {
+    rest.into_iter().fold(start, |acc, (op, clause)| {
+        if op != reference_op {
+            panic!("Ambigious policy: cannot mix ands/ors on the same level")
+        }
         let ob = TwoNodeObligation {
             op,
             src: acc,

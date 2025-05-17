@@ -46,7 +46,7 @@ pub fn override_initialization_typ(
     if let Some(typ) = compute_initialization_typ(&intro.intro, false) {
         if matches!(typ, InitializationType::NodeCluster) {
             let mut count = 0;
-            count_references_to_variable(&intro.variable, body, &mut count);
+            count_references_to_variable(&intro.variable, &body.ty, &mut count);
             if count > 1 {
                 initialization_typ_override = Some(InitializationType::GlobalNodesIterator)
             }

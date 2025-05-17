@@ -1,9 +1,7 @@
-{{#if sink-node-cluster}}
-  {{#if sink-for-each}}
-    {{src}}.has_ctrl_influence_all(&{{sink}}, &ctx).is_none()
-  {{else}}
-    {{src}}.has_ctrl_influence(&{{sink}}, &ctx)
-  {{/if}}
+CauseBuilder::new("", "{{clause_num}}")
+{{#if sink-for-each}}
+.has_ctrl_influence_all
 {{else}}
-    {{src}}.has_ctrl_influence({{sink}}, &ctx)
+.has_ctrl_influence
 {{/if}}
+(&{{src}}, &{{sink}}, &ctx)

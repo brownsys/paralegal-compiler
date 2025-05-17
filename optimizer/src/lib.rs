@@ -48,8 +48,8 @@ fn lift_definitions(policy: &mut Policy) {
 
     // Collect how many times each variable is introduced, mapped to its introduction
     while let Some(node) = queue.pop() {
-        match node {
-            ASTNode::Clause(clause) => {
+        match &node.ty {
+            ASTNodeType::Clause(clause) => {
                 match &clause.intro {
                     ClauseIntro::ForEach(var_intro) | ClauseIntro::ThereIs(var_intro) => {
                         match var_intro.intro {
@@ -72,11 +72,11 @@ fn lift_definitions(policy: &mut Policy) {
                 }
                 queue.push(&clause.body);
             }
-            ASTNode::JoinedNodes(obligation) => {
+            ASTNodeType::JoinedNodes(obligation) => {
                 queue.push(&obligation.src);
                 queue.push(&obligation.sink);
             }
-            ASTNode::Relation(ref relation) => {
+            ASTNodeType::Relation(ref relation) => {
                 let is_eligible = match relation {
                     Relation::Binary {
                         left: _,
@@ -100,10 +100,10 @@ fn lift_definitions(policy: &mut Policy) {
             }
             // The body of the always_happens_before() call uses contains() to check for membership,
             // which doesn't exist if we
-            ASTNode::OnlyVia(_, _, _) => {
+            ASTNodeType::OnlyVia(_, _, _) => {
                 return;
             }
-            ASTNode::FusedClause(_) => {
+            ASTNodeType::FusedClause(_) => {
                 unreachable!(
                     "
                     Encountered a fused node while peforming the lifting optimization.
@@ -152,8 +152,8 @@ fn lift_definitions(policy: &mut Policy) {
     queue.push(&mut policy.body);
 
     while let Some(node) = queue.pop() {
-        match node {
-            ASTNode::Clause(clause) => {
+        match &mut node.ty {
+            ASTNodeType::Clause(clause) => {
                 let typ = (&clause.intro).into();
                 match &mut clause.intro {
                     ClauseIntro::ForEach(var_intro) | ClauseIntro::ThereIs(var_intro) => {
@@ -165,12 +165,12 @@ fn lift_definitions(policy: &mut Policy) {
                 }
                 queue.push(&mut clause.body);
             }
-            ASTNode::JoinedNodes(obligation) => {
+            ASTNodeType::JoinedNodes(obligation) => {
                 queue.push(&mut obligation.src);
                 queue.push(&mut obligation.sink);
             }
-            ASTNode::Relation(_) | ASTNode::OnlyVia(_, _, _) => {}
-            ASTNode::FusedClause(_) => {
+            ASTNodeType::Relation(_) | ASTNodeType::OnlyVia(_, _, _) => {}
+            ASTNodeType::FusedClause(_) => {
                 unreachable!(
                     "
                     Encountered a fused node while peforming the lifting optimization.
@@ -216,7 +216,7 @@ fn fuse(original_policy: Policy) -> Policy {
             var_intro: &VariableIntro,
             rest: Option<ASTNode>,
             is_conditional: bool,
-        ) -> Option<ASTNode> {
+        ) -> Option<ASTNodeType> {
             if !self.ready_to_fuse {
                 return None;
             }
@@ -224,7 +224,7 @@ fn fuse(original_policy: Policy) -> Policy {
             let outer_var = self.outer_var.as_ref()?;
             let (pos, binop) = get_binop_and_position(relation, outer_var)?;
 
-            Some(ASTNode::FusedClause(Box::new(FusedClause {
+            Some(ASTNodeType::FusedClause(Box::new(FusedClause {
                 outer_var: outer_var.clone(),
                 binop,
                 pos,
@@ -256,11 +256,19 @@ fn fuse(original_policy: Policy) -> Policy {
             Relation::Negation(relation) => get_binop_and_position(relation, outer_var),
         }
     }
+
+    fn process_node(node: &ASTNode, state: &mut FuseState) -> ASTNode {
+        ASTNode {
+            ty: process_node_type(&node.ty, state),
+            clause_num: node.clause_num.clone(),
+        }
+    }
+
     /// Given a reference to a node in the policy, return its replacement fused node if possible;
     /// otherwise, return the original node
-    fn process_node(node: &ASTNode, state: &mut FuseState) -> ASTNode {
+    fn process_node_type(node: &ASTNodeType, state: &mut FuseState) -> ASTNodeType {
         match node {
-            ASTNode::Clause(clause) => {
+            ASTNodeType::Clause(clause) => {
                 match &clause.intro {
                     ClauseIntro::ForEach(var_intro) | ClauseIntro::ThereIs(var_intro) => {
                         // Only support double loops of "variable marked" for now
@@ -274,8 +282,8 @@ fn fuse(original_policy: Policy) -> Policy {
 
                                 if state.ready_to_fuse {
                                     // Look ahead to see if the body is a conditional or relation we can fuse
-                                    match &clause.body {
-                                        ASTNode::Clause(inner_clause) => {
+                                    match &clause.body.ty {
+                                        ASTNodeType::Clause(inner_clause) => {
                                             if let ClauseIntro::Conditional(relation) =
                                                 &inner_clause.intro
                                             {
@@ -288,7 +296,7 @@ fn fuse(original_policy: Policy) -> Policy {
                                                 let mut count = 0;
                                                 count_references_to_variable(
                                                     &var_intro.variable,
-                                                    &clause.body,
+                                                    &clause.body.ty,
                                                     &mut count,
                                                 );
                                                 // If the variable ("B" in the example) is referred to more than once, that means it gets referenced outside of this conditional,
@@ -307,11 +315,11 @@ fn fuse(original_policy: Policy) -> Policy {
                                                 }
                                             }
                                         }
-                                        ASTNode::Relation(relation) => {
+                                        ASTNodeType::Relation(relation) => {
                                             let mut count = 0;
                                             count_references_to_variable(
                                                 &var_intro.variable,
-                                                &clause.body,
+                                                &clause.body.ty,
                                                 &mut count,
                                             );
                                             // If the variable ("B" in the example) is referred to more than once, that means it gets referenced outside of this conditional,
@@ -336,21 +344,21 @@ fn fuse(original_policy: Policy) -> Policy {
                 }
 
                 let new_body = process_node(&clause.body, state);
-                ASTNode::Clause(Box::new(Clause {
+                ASTNodeType::Clause(Box::new(Clause {
                     intro: clause.intro.clone(),
                     body: new_body,
                 }))
             }
-            ASTNode::Relation(_) => node.clone(),
-            ASTNode::JoinedNodes(_) => {
+            ASTNodeType::Relation(_) => node.clone(),
+            ASTNodeType::JoinedNodes(_) => {
                 state.reset();
                 node.clone()
             }
-            ASTNode::OnlyVia(..) => {
+            ASTNodeType::OnlyVia(..) => {
                 state.reset();
                 node.clone()
             }
-            ASTNode::FusedClause(_) => {
+            ASTNodeType::FusedClause(_) => {
                 unreachable!(
                     "Encountered a fused node before inserting any.
                     This indicates a compiler bug; fusing must come after lifting."

@@ -1,1 +1,6 @@
-!{{intro}} || { {{body}} }
+CauseBuilder::new("", "{{clause_num}}")
+    .or(|| 
+        CauseBuilder::new("", "{{clause_num}}")
+            .not({{intro}}),
+        || {{body}}
+    )

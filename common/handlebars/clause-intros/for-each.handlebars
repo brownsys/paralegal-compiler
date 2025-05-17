@@ -1,11 +1,11 @@
 {{#if refers-to-definition}}
     {{#if node-cluster}}
-        let Some(mut {{var}}) = {{var}}.clone() else { return true; };
+        let Some(ref {{var}}) = {{var}}.clone() else { return (true, CauseBuilder::new("", "").with_type(CauseTy::empty_quantifier(Connective::Or))); };
     {{/if}}
 {{else}}
     {{#if node-cluster}}
         {{intro}});
-        let Some(mut {{var}}) = {{var}} else { return true; };
+        let Some(ref {{var}}) = {{var}} else { return (true, CauseBuilder::new("", "").with_type(CauseTy::empty_quantifier(Connective::Or))); };
     {{else}}
         let mut {{var}} = {{intro}};
     {{/if}}
@@ -14,8 +14,8 @@
 {{#if node-cluster}}
 {{body}}
 {{else}}
-    {{var}}
-        .all(|{{var}}| {
+    CauseBuilder::new("", "{{clause_num}}")
+        .all({{var}}, |{{var}}| {
             {{body}}
         })
 {{/if}}

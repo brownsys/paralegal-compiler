@@ -1,7 +1,7 @@
 {{global-definitions}}
 
-let is_compliant = ctx.controller_contexts().all(|ctx| { 
+let is_compliant = CauseBuilder::new("Scope everywhere", "").all(ctx.controller_contexts(), |ctx| { 
     {{definitions}}
     {{body}}
 });
-    assert_error!(ctx, is_compliant, format!("At least one controller does not satisfy the policy"));
+error::report(is_compliant, ctx.root());
