@@ -157,6 +157,9 @@ pub fn join_nodes((start, rest): (ASTNode, Vec<(Operator, ASTNode)>)) -> ASTNode
             src: acc,
             sink: clause,
         };
-        ASTNode::JoinedNodes(Box::new(ob))
+        ASTNode {
+            ty: ASTNodeType::JoinedNodes(Box::new(ob)),
+            clause_num: "".to_owned(),
+        }
     })
 }

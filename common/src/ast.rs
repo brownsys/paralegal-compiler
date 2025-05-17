@@ -153,7 +153,13 @@ pub struct FusedClause {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum ASTNode {
+pub struct ASTNode {
+    pub clause_num: String,
+    pub ty: ASTNodeType,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum ASTNodeType {
     Clause(Box<Clause>),
     FusedClause(Box<FusedClause>),
     OnlyVia(

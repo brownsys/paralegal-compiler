@@ -4,9 +4,10 @@ use nom::{
     bytes::complete::tag,
     character::complete::space1,
     combinator::map,
-    error::context,
+    error::{context, VerboseError},
     multi::many0,
-    sequence::{pair, preceded, separated_pair, terminated, tuple},
+    sequence::{pair, separated_pair, terminated, tuple},
+    Parser,
 };
 
 use crate::{shared::*, Res};
@@ -185,68 +186,40 @@ pub fn relation(s: &str) -> Res<&str, Relation> {
     )(s)
 }
 
+pub fn relation_node<'a>(
+    bullet: impl Parser<&'a str, &'a str, VerboseError<&'a str>>,
+) -> impl FnMut(&'a str) -> Res<&'a str, ASTNode> {
+    map(tuple((bullet, relation)), |(bullet, relation)| ASTNode {
+        ty: ASTNodeType::Relation(relation),
+        clause_num: bullet.to_string(),
+    })
+}
+
+pub fn grelations<'a>(
+    bullet: impl Parser<&'a str, &'a str, VerboseError<&'a str>>,
+) -> impl FnMut(&'a str) -> Res<&'a str, ASTNode> {
+    let mut node = relation_node(bullet);
+    move |s| {
+        let (remainder, relation1) = node(s)?;
+        let (remainder, relations) = many0(tuple((operator, &mut node)))(remainder)?;
+        Ok((remainder, join_nodes((relation1, relations))))
+    }
+}
+
 pub fn l2_relations(s: &str) -> Res<&str, ASTNode> {
-    context(
-        "l2 relations",
-        map(
-            pair(
-                preceded(l2_bullet, map(relation, ASTNode::Relation)),
-                many0(tuple((
-                    operator,
-                    (preceded(l2_bullet, map(relation, ASTNode::Relation))),
-                ))),
-            ),
-            join_nodes,
-        ),
-    )(s)
+    context("l2 relations", grelations(l2_bullet))(s)
 }
 
 pub fn l3_relations(s: &str) -> Res<&str, ASTNode> {
-    context(
-        "l3 relations",
-        map(
-            pair(
-                preceded(l3_bullet, map(relation, ASTNode::Relation)),
-                many0(tuple((
-                    operator,
-                    (preceded(l3_bullet, map(relation, ASTNode::Relation))),
-                ))),
-            ),
-            join_nodes,
-        ),
-    )(s)
+    context("l3 relations", grelations(l3_bullet))(s)
 }
 
 pub fn l4_relations(s: &str) -> Res<&str, ASTNode> {
-    context(
-        "l4 relations",
-        map(
-            pair(
-                preceded(l4_bullet, map(relation, ASTNode::Relation)),
-                many0(tuple((
-                    operator,
-                    (preceded(l4_bullet, map(relation, ASTNode::Relation))),
-                ))),
-            ),
-            join_nodes,
-        ),
-    )(s)
+    context("l4 relations", grelations(l4_bullet))(s)
 }
 
 pub fn l5_relations(s: &str) -> Res<&str, ASTNode> {
-    context(
-        "l5 relations",
-        map(
-            pair(
-                preceded(l5_bullet, map(relation, ASTNode::Relation)),
-                many0(tuple((
-                    operator,
-                    (preceded(l5_bullet, map(relation, ASTNode::Relation))),
-                ))),
-            ),
-            join_nodes,
-        ),
-    )(s)
+    context("l5 relations", grelations(l5_bullet))(s)
 }
 
 /*

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use strum_macros::EnumIter;
 
 use crate::{
-    ast::{ASTNode, Binop, ClauseIntro, Operator, Position, Relation, VariableIntro},
+    ast::{ASTNode, ASTNodeType, Binop, ClauseIntro, Operator, Position, Relation, VariableIntro},
     PolicyScope,
 };
 
@@ -160,12 +160,12 @@ impl From<&ClauseIntro> for Template {
 
 impl From<&ASTNode> for Template {
     fn from(value: &ASTNode) -> Self {
-        match value {
-            ASTNode::Relation(relation) => relation.into(),
-            ASTNode::OnlyVia { .. } => Template::OnlyVia,
-            ASTNode::Clause(clause) => (&clause.intro).into(),
-            ASTNode::JoinedNodes(obligation) => (&obligation.op).into(),
-            ASTNode::FusedClause(clause) => match (&clause.binop, &clause.pos) {
+        match &value.ty {
+            ASTNodeType::Relation(relation) => relation.into(),
+            ASTNodeType::OnlyVia { .. } => Template::OnlyVia,
+            ASTNodeType::Clause(clause) => (&clause.intro).into(),
+            ASTNodeType::JoinedNodes(obligation) => (&obligation.op).into(),
+            ASTNodeType::FusedClause(clause) => match (&clause.binop, &clause.pos) {
                 (Binop::AssociatedCallSite, _) => unreachable!("not eligible for fusing"),
                 (Binop::Both, Position::Source) => Template::BothSource,
                 (Binop::Both, Position::Target) => Template::BothTarget,
