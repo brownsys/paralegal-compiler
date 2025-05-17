@@ -6,7 +6,7 @@ let mut {{{var}}} = {{{intro}}};
 {{#if filter}}
     .filter(|n| {
         let {{{inner_var}}} = *n;
-        {{{filter}}}
+        (|| { {{{filter}}} })().0
     })
 {{/if}}
 {{#if node-cluster}}

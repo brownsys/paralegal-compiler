@@ -4,7 +4,7 @@ let {{{sink}}}_callsite = {{{sink}}}.siblings(&ctx);
 CauseBuilder::new("{{span}}", "{{clause_num}}")
     .goes_to(
         {{{src}}},
-        {{{sink}}}.extended({{{sink}}}_callsite),
+        &{{{sink}}}.extended(&{{{sink}}}_callsite).unwrap(),
         ctx.as_ref()
     )
 }

@@ -6,7 +6,7 @@ let mut {{{var}}} = {{{intro}}}
 {{#if filter}}
     .filter(|{{{inner_var}}}| {
         ctx.controller_contexts().any(|ctx| {
-            {{{filter}}}
+            (|| { {{{filter}}} })().0
         })
     })
 {{/if}}
