@@ -1,7 +1,10 @@
+// global-definition
+
+
 {{#if node-cluster}}
 {{intro}}
 {{else}}
-let mut {{{var}}} = {{{intro}}}
+let {{{var}}}_set = {{{intro}}}
 {{/if}}
 {{#if filter}}
     .filter(|{{{inner_var}}}| {
@@ -12,5 +15,8 @@ let mut {{{var}}} = {{{intro}}}
 {{/if}}
 {{#if node-cluster}}
 )
+{{else}}
+    .collect::<HashSet<_>>();
+let {{{var}}} = IterCopied(&{{{var}}}_set);
 {{/if}}
 ;
