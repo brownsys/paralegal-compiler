@@ -3,6 +3,7 @@ use ast::*;
 pub mod ast;
 pub mod templates;
 pub mod verify_scope;
+pub mod vis;
 
 // Top-level policy / definition data
 #[derive(Clone, Debug, PartialEq, Eq)]

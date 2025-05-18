@@ -10,6 +10,7 @@ use crate::initialization_typ::{
 };
 use common::templates::*;
 use common::verify_scope::*;
+use common::vis::{self, VisitMut};
 
 fn compile_variable_intro(
     handlebars: &mut Handlebars,
@@ -490,7 +491,12 @@ fn compile_definitions(
     results.join("\n")
 }
 
-pub fn compile(policy: Policy, policy_name: &str, out: &Path, create_bin: bool) -> Result<()> {
+pub fn compile(mut policy: Policy, policy_name: &str, out: &Path, create_bin: bool) -> Result<()> {
+    let mut propagator = ClauseNumPropagator {
+        current: String::new(),
+    };
+    propagator.visit_ast_node_mut(&mut policy.body);
+
     let mut handlebars = Handlebars::new();
     handlebars.set_strict_mode(true);
     register_templates(&mut handlebars);
@@ -554,4 +560,34 @@ pub fn compile(policy: Policy, policy_name: &str, out: &Path, create_bin: bool) 
     fs::write(out, &main)?;
     Command::new("rustfmt").arg(out).status()?;
     Ok(())
+}
+
+struct ClauseNumPropagator {
+    current: String,
+}
+
+impl VisitMut<'_> for ClauseNumPropagator {
+    fn visit_ast_node_mut(&mut self, node: &mut ASTNode) {
+        let old = if !node.clause_num.is_empty() {
+            let new = format!(
+                "{}{}{}",
+                self.current,
+                if self.current.is_empty() { "" } else { "." },
+                node.clause_num
+            );
+            Some(std::mem::replace(&mut self.current, new))
+        } else {
+            None
+        };
+        vis::super_visit_ast_node_mut(self, node);
+        if let Some(old) = old {
+            self.current = old;
+        }
+    }
+
+    fn visit_clause_num_mut(&mut self, clause_num: &mut String) {
+        if !clause_num.is_empty() && !self.current.is_empty() {
+            *clause_num = self.current.clone();
+        }
+    }
 }
