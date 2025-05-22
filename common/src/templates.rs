@@ -1,9 +1,9 @@
-use handlebars::{no_escape, Handlebars};
+use handlebars::Handlebars;
 use std::collections::HashMap;
 use strum_macros::EnumIter;
 
 use crate::{
-    ast::{ASTNode, ASTNodeType, Binop, ClauseIntro, Operator, Position, Relation, VariableIntro},
+    ast::{ASTNode, ASTNodeType, Binop, ClauseIntro, Operator, Relation, VariableIntro},
     PolicyScope,
 };
 
@@ -165,15 +165,6 @@ impl From<&ASTNode> for Template {
             ASTNodeType::OnlyVia { .. } => Template::OnlyVia,
             ASTNodeType::Clause(clause) => (&clause.intro).into(),
             ASTNodeType::JoinedNodes(obligation) => (&obligation.op).into(),
-            ASTNodeType::FusedClause(clause) => match (&clause.binop, &clause.pos) {
-                (Binop::AssociatedCallSite, _) => unreachable!("not eligible for fusing"),
-                (Binop::Both, Position::Source) => Template::BothSource,
-                (Binop::Both, Position::Target) => Template::BothTarget,
-                (Binop::Control, Position::Source) => Template::ControlSource,
-                (Binop::Control, Position::Target) => Template::ControlTarget,
-                (Binop::Data, Position::Source) => Template::DataSource,
-                (Binop::Data, Position::Target) => Template::DataTarget,
-            },
         }
     }
 }

@@ -14,7 +14,7 @@ pub trait VisitMut<'p> {
     fn visit_ast_node_mut(&mut self, node: &'p mut ASTNode) {
         super_visit_ast_node_mut(self, node);
     }
-    fn visit_variable_mut(&mut self, variable: &'p mut Variable) {}
+    fn visit_variable_mut(&mut self, _variable: &'p mut Variable) {}
     fn visit_variable_intro_mut(&mut self, variable: &'p mut VariableIntro) {
         super_visit_variable_intro_mut(self, variable);
     }
@@ -23,9 +23,6 @@ pub trait VisitMut<'p> {
     }
     fn visit_relation_mut(&mut self, relation: &'p mut Relation) {
         super_visit_relation_mut(self, relation);
-    }
-    fn visit_fused_clause_mut(&mut self, clause: &'p mut FusedClause) {
-        super_visit_fused_clause_mut(self, clause);
     }
     fn visit_only_via_mut(
         &mut self,
@@ -42,7 +39,7 @@ pub trait VisitMut<'p> {
         super_visit_clause_intro_mut(self, intro);
     }
 
-    fn visit_clause_num_mut(&mut self, clause_num: &'p mut String) {}
+    fn visit_clause_num_mut(&mut self, _clause_num: &'p mut String) {}
 }
 
 pub fn super_visit_policy_mut<'p, V: VisitMut<'p> + ?Sized>(
@@ -85,9 +82,6 @@ pub fn super_visit_ast_node_mut<'p, V: VisitMut<'p> + ?Sized>(
         ASTNodeType::Relation(relation) => {
             visitor.visit_relation_mut(relation);
         }
-        ASTNodeType::FusedClause(clause) => {
-            visitor.visit_fused_clause_mut(clause.as_mut());
-        }
         ASTNodeType::OnlyVia(intro, op1, op2) => {
             visitor.visit_only_via_mut(intro, op1, op2);
         }
@@ -120,17 +114,6 @@ pub fn super_visit_relation_mut<'p, V: VisitMut<'p> + ?Sized>(
         }
         Relation::Negation(relation) => visitor.visit_relation_mut(relation),
         Relation::IsMarked(var, _) => visitor.visit_variable_mut(var),
-    }
-}
-
-pub fn super_visit_fused_clause_mut<'p, V: VisitMut<'p> + ?Sized>(
-    visitor: &mut V,
-    clause: &'p mut FusedClause,
-) {
-    visitor.visit_variable_mut(&mut clause.outer_var);
-    visitor.visit_variable_intro_mut(&mut clause.filter);
-    if let Some(rest) = &mut clause.rest {
-        visitor.visit_ast_node_mut(rest);
     }
 }
 
@@ -175,7 +158,7 @@ pub trait Visit<'p> {
     fn visit_ast_node(&mut self, node: &'p ASTNode) {
         super_visit_ast_node(self, node);
     }
-    fn visit_variable(&mut self, variable: &'p Variable) {}
+    fn visit_variable(&mut self, _variable: &'p Variable) {}
     fn visit_variable_intro(&mut self, variable: &'p VariableIntro) {
         super_visit_variable_intro(self, variable);
     }
@@ -184,9 +167,6 @@ pub trait Visit<'p> {
     }
     fn visit_relation(&mut self, relation: &'p Relation) {
         super_visit_relation(self, relation);
-    }
-    fn visit_fused_clause(&mut self, clause: &'p FusedClause) {
-        super_visit_fused_clause(self, clause);
     }
     fn visit_only_via(
         &mut self,
@@ -203,7 +183,7 @@ pub trait Visit<'p> {
         super_visit_clause_intro(self, intro);
     }
 
-    fn visit_clause_num(&mut self, clause_num: &'p String) {}
+    fn visit_clause_num(&mut self, _clause_num: &'p String) {}
 }
 
 pub fn super_visit_policy<'p, V: Visit<'p> + ?Sized>(visitor: &mut V, policy: &'p Policy) {
@@ -240,9 +220,6 @@ pub fn super_visit_ast_node<'p, V: Visit<'p> + ?Sized>(visitor: &mut V, node: &'
         ASTNodeType::Relation(relation) => {
             visitor.visit_relation(relation);
         }
-        ASTNodeType::FusedClause(clause) => {
-            visitor.visit_fused_clause(clause.as_ref());
-        }
         ASTNodeType::OnlyVia(intro, op1, op2) => {
             visitor.visit_only_via(intro, op1, op2);
         }
@@ -269,17 +246,6 @@ pub fn super_visit_relation<'p, V: Visit<'p> + ?Sized>(visitor: &mut V, relation
         }
         Relation::Negation(relation) => visitor.visit_relation(relation),
         Relation::IsMarked(var, _) => visitor.visit_variable(var),
-    }
-}
-
-pub fn super_visit_fused_clause<'p, V: Visit<'p> + ?Sized>(
-    visitor: &mut V,
-    clause: &'p FusedClause,
-) {
-    visitor.visit_variable(&clause.outer_var);
-    visitor.visit_variable_intro(&clause.filter);
-    if let Some(rest) = &clause.rest {
-        visitor.visit_ast_node(rest);
     }
 }
 

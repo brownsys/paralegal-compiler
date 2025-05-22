@@ -62,14 +62,6 @@ pub fn count_references_to_variable(variable: &Variable, body: &ASTNodeType, cou
             count_references_to_variable(variable, &obligation.src.ty, count);
             count_references_to_variable(variable, &obligation.sink.ty, count);
         }
-        ASTNodeType::FusedClause(clause) => {
-            if clause.outer_var == *variable {
-                *count += 1;
-            }
-            if let Some(rest) = &clause.rest {
-                count_references_to_variable(variable, &rest.ty, count);
-            }
-        }
         ASTNodeType::OnlyVia(..) => unreachable!("Only via can't be inside another clause."),
     }
 }

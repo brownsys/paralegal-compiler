@@ -1,7 +1,1 @@
-// variable-of-type-marked
-
-{{#if node-cluster}}
-let Some(mut {{{var}}}) = NodeCluster::try_from_iter(ctx.marked_type(marker!({{{marker}}})).iter()
-{{else}}
-ctx.marked_type(marker!({{{marker}}})).iter().copied()
-{{/if}}
+ctx.marked_type(marker!({{{marker}}})).iter()

@@ -13,5 +13,7 @@ let mut {{{var}}} = {{{intro}}};
 {{/if}}
 {{#if node-cluster}}
 )
+{{else}}
+.collect::<Vec<_>>()
 {{/if}}
 ;

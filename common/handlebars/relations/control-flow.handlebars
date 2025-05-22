@@ -1,9 +1,9 @@
-// control-flow 
+// control-flow
 
 CauseBuilder::new("{{span}}", "{{clause_num}}")
-{{#if sink-for-each}}
-    .has_ctrl_influence_all
+{{#if sink-all-method}}
+.has_ctrl_influence_all
 {{else}}
-    .has_ctrl_influence
+.has_ctrl_influence
 {{/if}}
-    ({{{src}}}, {{{sink}}}, ctx.as_ref())
+({{{src}}}, {{{sink}}}, ctx.as_ref())
