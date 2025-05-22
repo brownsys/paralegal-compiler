@@ -19,7 +19,7 @@ let cause_builder = CauseBuilder::new("{{span}}", "{{clause_num}}");
 {{{body}}}
 {{else}}
     cause_builder
-        .any({{{var}}}, |{{{var}}}| {
+        .any({{{var}}}.into_iter(), |{{{var}}}| {
             {{{body}}}
         })
 {{/if}}

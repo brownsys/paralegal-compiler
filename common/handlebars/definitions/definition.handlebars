@@ -3,9 +3,10 @@
 {{#if node-cluster}}
 {{{intro}}}
 {{else}}
-let mut {{{var}}} = {{{intro}}};
+let {{{var}}}_base = {{{intro}}}
 {{/if}}
 {{#if filter}}
+    .into_iter()
     .filter(|n| {
         let {{{inner_var}}} = *n;
         (|| { {{{filter}}} })().0
@@ -14,6 +15,7 @@ let mut {{{var}}} = {{{intro}}};
 {{#if node-cluster}}
 )
 {{else}}
-.collect::<Vec<_>>()
+    .collect::<Vec<_>>();
+    let {{{var}}} = IterCopied(&{{{var}}}_base);
 {{/if}}
-;
+    ;

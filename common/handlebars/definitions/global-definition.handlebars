@@ -2,11 +2,12 @@
 
 
 {{#if node-cluster}}
-{{intro}}
+{{{intro}}}
 {{else}}
 let {{{var}}}_set = {{{intro}}}
 {{/if}}
 {{#if filter}}
+    .into_iter()
     .filter(|{{{inner_var}}}| {
         ctx.controller_contexts().any(|ctx| {
             (|| { {{{filter}}} })().0

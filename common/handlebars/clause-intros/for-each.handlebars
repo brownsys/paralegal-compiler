@@ -18,7 +18,7 @@ let cause_builder = CauseBuilder::new("{{span}}", "{{clause_num}}");
 {{{body}}}
 {{else}}
     cause_builder
-        .all({{{var}}}, |{{{var}}}| {
+        .all({{{var}}}.into_iter(), |{{{var}}}| {
             {{{body}}}
         })
 {{/if}}
